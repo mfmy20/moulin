@@ -1,24 +1,7 @@
-Skip to content
- 
-Search…
-All gists
-GitHub
-New gist
-@mfmy20
-  Star 0
-  Fork 0
-anonymousanonymous/main.py Secret
-Created 12 minutes ago
-Embed  
-<script src="https://gist.github.com/anonymous/4aafe35008068658f57171d4e666a79b.js"></script>
-  Download ZIP
- Code  Revisions 1
-Raw
- main.py
-from IA import *
+#from IA import *
 from tkinter import *
 
-
+debug_IA = "true"
 
 
 
@@ -29,53 +12,104 @@ class Arbre(object):
         self.profondeur = profondeur
         self.joueur = joueur
         self.jeton = jeton
-        self.vaaleur = valeur
+        self.valeur = valeur
         self.IA = []
         self.IAJoue()
 
     def IAJoue(self):
-        global moulin
-        if self.profondeur >= 0:
-            for J in self.jeton:
-                J = self.jeton[J]
-                if J == "":
-                    J = "black"
-                    J = "black"
-                    colone_ligne()
-                    verification_moulin()
-                    v = moulin
-                    J = ""
-                    moulin = "false"
-                    self.IA.append(Arbre(self.profondeur - 1, -self.joueur,
-                                         self.jeton, self.realval(v)))
+        global jeton_simulé
+        max_val = -1000000
+        for J in jeton:
+            if jeton[J] == "":
+                jeton[J] = "black"
+                jeton_simulé = J
+                val = Min( jeton_simulé, self.profondeur-1)
+                if val > max_val:
+                    max_val = val
+                    MeilleurCoup = J
+                jeton[J] = ""
+        print(MeilleurCoup)
 
-    def realval(self, valeur):
-        if valeur == "true":
-            return 1000 * self.joueur
-        else:
-            return 1000 * -self.joueur
-        return 0
+def realval(jeton_simulé):
+    val = 0
+    list_ColoneIA(jeton_simulé)
+    for l in listdeslist:
+        valeur_noir = listdeslist[l].count("black")
+        valeur_blanc = listdeslist[l].count("white")
+        if valeur_noir == 0:
+            if valeur_blanc == 3:
+                val = val-100
+            elif valeur_blanc == 2:
+                val = val-50
+            elif valeur_blanc == 1:
+                val = val - 10
+        if valeur_noir == 1:
+            if valeur_blanc == 2:
+                val = val+25
+            elif valeur_blanc == 0:
+                val = val+10
+        if valeur_noir == 2:
+            if valeur_blanc == 1:
+                val = val-25
+            else:
+                val = val+50
+        if valeur_noir == 3:
+            val = val+100
+    listdeslist[colone_supprimer].pop()
+    listdeslist[ligne_supprimer].pop()
+    if nbr_noir > nbr_blanc:
+        val = val+25
+    elif nbr_blanc > nbr_noir:
+        val = val+25
+    return val
 
+def list_ColoneIA(jeton_simulé):
+    global colone_supprimer,ligne_supprimer
+    for l in listdeslist:
+        if jeton_simulé[2] == l:
+            listdeslist[l].append(jeton[jeton_simulé])
+            colone_supprimer = l
+        elif jeton_simulé[3] == l:
+            listdeslist[l].append(jeton[jeton_simulé])
+            ligne_supprimer = l
+        
+def Min( jeton_simulé, profondeur):
+    if profondeur == 0:
+        return realval(jeton_simulé)
+    else:
+        min_val = 1000000
+        for J in jeton:
+            if jeton[J] == "":
+                jeton[J] = "white"
+                jeton_simulé = J
+                val = Max( jeton_simulé, profondeur-1)
+                if val < min_val:
+                    min_val = val
+                jeton[J] = ""
+        return min_val
 
-def MinMax(arbre, profondeur, joueur):
-    if profondeur == 0 or abs(arbre.valeur) == 1000:
-        return arbre.valeur
-    MeilleurValeur = 1000 * -joueur
-
-    for i in range(len(arbre.IA)):
-        IA = arbre.IA[i]
-        val = MinMax(IA, profondeur - 1, -joueur)
-        if (abs(1000 * joueur - val) < abs(1000 * joueur - MeilleurValeur)):
-            MeilleurValeur = val
-    return MeilleurValeur
+def Max( jeton_simulé, profondeur):
+    if profondeur == 0:
+        return realval( jeton_simulé)
+    else:
+        max_val = -1000000
+        for J in jeton:
+            if jeton[J] == "":
+                jeton[J] = "black"
+                jeton_simulé = J
+                val = Min( jeton_simulé, profondeur-1)
+                if val > max_val:
+                    max_val = val
+                jeton[J] = ""
+        return max_val
 
 
 def test(jeton):
-    global joueur
+    global joueur,arbre
     joueur = -1
     profondeur = 2
     arbre = Arbre(profondeur, joueur, jeton)
-    MeilleurValeur = -joueur * 1000
+
 
 
 
@@ -163,7 +197,6 @@ jeton_noir = {(1150, 25): "black", (1150, 150): "black", (1150, 275): "black", (
 listdeslist = {'A': A, 'a': a, 'B': B, 'b': b, 'C': C, 'c': c, 'D': D, 'd': d, 'E': E, 'e': e, 'F': F, 'f': f, 'G': G,
                'g': g, 'H': H, 'h': h}
 
-
 def exit_game(event):
     fenetre.destroy()
     exit()
@@ -213,6 +246,7 @@ def jeton_par_position(x, y):
 
 def verification_moulin():
     global moulin
+    moulin = "false"
     if debug == "true":
         print("vérification ", listdeslist[l])
     if listdeslist[l] == white:
@@ -511,5 +545,3 @@ plateau.bind("<Button-1>", poser)
 plateau.pack()
 
 fenetre.mainloop()
-
-#IA + gameplay base
